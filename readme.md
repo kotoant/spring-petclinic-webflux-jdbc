@@ -155,3 +155,34 @@ The Spring PetClinic sample application is released under version 2.0 of the [Ap
 [spring-petclinic-graphql]: https://github.com/spring-petclinic/spring-petclinic-graphql
 [spring-petclinic-kotlin]: https://github.com/spring-petclinic/spring-petclinic-kotlin
 [spring-petclinic-rest]: https://github.com/spring-petclinic/spring-petclinic-rest
+
+
+# Build service
+
+```bash
+./mvnw clean install
+```
+
+# Build docker image
+
+```bash
+./mvnw com.google.cloud.tools:jib-maven-plugin:dockerBuild
+```
+
+# Start docker compose
+
+```bash
+docker-compose up 
+```
+
+# Stop docker compose
+
+```bash
+docker-compose down -v
+```
+
+# Run k6 stress test
+
+```bash
+k6 run script.js -o experimental-prometheus-rw
+```

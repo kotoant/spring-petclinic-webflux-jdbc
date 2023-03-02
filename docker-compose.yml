@@ -1,23 +1,43 @@
-version: "2.2"
+version: '2.4'
 
 services:
-  mysql:
-    image: mysql:5.7
-    ports:
-      - "3306:3306"
-    environment:
-      - MYSQL_ROOT_PASSWORD=
-      - MYSQL_ALLOW_EMPTY_PASSWORD=true
-      - MYSQL_USER=petclinic
-      - MYSQL_PASSWORD=petclinic
-      - MYSQL_DATABASE=petclinic
-    volumes:
-      - "./conf.d:/etc/mysql/conf.d:ro"
   postgres:
     image: postgres:14.1
+    cpus: 4
+    mem_limit: 4096m
     ports:
       - "5432:5432"
     environment:
       - POSTGRES_PASSWORD=petclinic
       - POSTGRES_USER=petclinic
       - POSTGRES_DB=petclinic
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: "pg_isready -q -h postgres -U petclinic"
+      interval: 3s
+      timeout: 5s
+      retries: 15
+
+  petclinic:
+    image: kotoant/spring-petclinic-webmvc-jdbc
+    cpus: 4
+    mem_limit: 4096m
+    ports:
+      - "8080:8080"
+    command: >
+      --spring.profiles.active=postgres,project-loom
+      --spring.datasource.url=jdbc:postgresql://postgres/petclinic
+      --spring.datasource.hikari.connection-test-query='select 1'
+      --spring.datasource.hikari.connection-timeout=30000
+      --spring.datasource.hikari.idle-timeout=300000
+      --spring.datasource.hikari.max-lifetime=1800000
+      --spring.datasource.hikari.maximum-pool-size=95
+      --spring.datasource.hikari.minimum-idle=10
+      --spring.datasource.hikari.validation-timeout=5000
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres-data:
